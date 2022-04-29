@@ -39,13 +39,13 @@ class App {
    */
   activateXR = async () => {
     try {
-      /** Initialize a WebXR session using "immersive-ar". */
-      // this.xrSession = await navigator.xr.requestSession("immersive-ar");
-      /** Alternatively, initialize a WebXR session using extra required features. */
-      // this.xrSession = await navigator.xr.requestSession("immersive-ar", {
-      //   requiredFeatures: ['hit-test', 'dom-overlay'],
-      //   domOverlay: { root: document.body }
-      // });
+       // /** Initialize a WebXR session using "immersive-ar". */
+      // // this.xrSession = await navigator.xr.requestSession("immersive-ar");
+      // * Alternatively, initialize a WebXR session using extra required features. 
+      this.xrSession = await navigator.xr.requestSession("immersive-ar", {
+        requiredFeatures: ['hit-test', 'dom-overlay'],
+        domOverlay: { root: document.body }
+      });
 
       /** Create the canvas that will contain our camera's background and our virtual scene. */
       this.createXRCanvas();
@@ -84,18 +84,18 @@ class App {
     this.setupThreeJs();
 
     /** Setup an XRReferenceSpace using the "local" coordinate system. */
-    // this.localReferenceSpace = await this.xrSession.requestReferenceSpace('local');
+    this.localReferenceSpace = await this.xrSession.requestReferenceSpace('local');
 
     /** Create another XRReferenceSpace that has the viewer as the origin. */
-    // this.viewerSpace = await this.xrSession.requestReferenceSpace('viewer');
+    this.viewerSpace = await this.xrSession.requestReferenceSpace('viewer');
 
     /** Perform hit testing using the viewer as origin. */
-    // this.hitTestSource = await this.xrSession.requestHitTestSource({ space: this.viewerSpace });
+    this.hitTestSource = await this.xrSession.requestHitTestSource({ space: this.viewerSpace });
 
     /** Start a rendering loop using this.onXRFrame. */
     this.xrSession.requestAnimationFrame(this.onXRFrame);
 
-    // this.xrSession.addEventListener("select", this.onSelect);
+    this.xrSession.addEventListener("select", this.onSelect);
   }
 
   /**
@@ -104,47 +104,47 @@ class App {
    */
   onXRFrame = (time, frame) => {
     /** Queue up the next draw request. */
-    // this.xrSession.requestAnimationFrame(this.onXRFrame);
+    this.xrSession.requestAnimationFrame(this.onXRFrame);
 
     /** Bind the graphics framebuffer to the baseLayer's framebuffer. */
-    // const framebuffer = this.xrSession.renderState.baseLayer.framebuffer
-    // this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer)
-    // this.renderer.setFramebuffer(framebuffer);
+    const framebuffer = this.xrSession.renderState.baseLayer.framebuffer
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer)
+    this.renderer.setFramebuffer(framebuffer);
 
     /** Retrieve the pose of the device.
      * XRFrame.getViewerPose can return null while the session attempts to establish tracking. */
-    // const pose = frame.getViewerPose(this.localReferenceSpace);
-    // if (pose) {
-    //   /** In mobile AR, we only have one view. */
-    //   const view = pose.views[0];
-    //
-    //   const viewport = this.xrSession.renderState.baseLayer.getViewport(view);
-    //   this.renderer.setSize(viewport.width, viewport.height)
-    //
-    //   /** Use the view's transform matrix and projection matrix to configure the THREE.camera. */
-    //   this.camera.matrix.fromArray(view.transform.matrix)
-    //   this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-    //   this.camera.updateMatrixWorld(true);
-    //
-    //   /** Conduct hit test. */
-    //   const hitTestResults = frame.getHitTestResults(this.hitTestSource);
-    //
-    //   /** If we have results, consider the environment stabilized. */
-    //   if (!this.stabilized && hitTestResults.length > 0) {
-    //     this.stabilized = true;
-    //     document.body.classList.add('stabilized');
-    //   }
-    //   if (hitTestResults.length > 0) {
-    //     const hitPose = hitTestResults[0].getPose(this.localReferenceSpace);
-    //
-    //     /** Update the reticle position. */
-    //     this.reticle.visible = true;
-    //     this.reticle.position.set(hitPose.transform.position.x, hitPose.transform.position.y, hitPose.transform.position.z)
-    //     this.reticle.updateMatrixWorld(true);
-    //   }
-    //   /** Render the scene with THREE.WebGLRenderer. */
-    //   this.renderer.render(this.scene, this.camera)
-    // }
+    const pose = frame.getViewerPose(this.localReferenceSpace);
+    if (pose) {
+      /** In mobile AR, we only have one view. */
+      const view = pose.views[0];
+    
+      const viewport = this.xrSession.renderState.baseLayer.getViewport(view);
+      this.renderer.setSize(viewport.width, viewport.height)
+    
+      /** Use the view's transform matrix and projection matrix to configure the THREE.camera. */
+      this.camera.matrix.fromArray(view.transform.matrix)
+      this.camera.projectionMatrix.fromArray(view.projectionMatrix);
+      this.camera.updateMatrixWorld(true);
+    
+      /** Conduct hit test. */
+      const hitTestResults = frame.getHitTestResults(this.hitTestSource);
+    
+      /** If we have results, consider the environment stabilized. */
+      if (!this.stabilized && hitTestResults.length > 0) {
+        this.stabilized = true;
+        document.body.classList.add('stabilized');
+      }
+      if (hitTestResults.length > 0) {
+        const hitPose = hitTestResults[0].getPose(this.localReferenceSpace);
+    
+        /** Update the reticle position. */
+        this.reticle.visible = true;
+        this.reticle.position.set(hitPose.transform.position.x, hitPose.transform.position.y, hitPose.transform.position.z)
+        this.reticle.updateMatrixWorld(true);
+      }
+      /** Render the scene with THREE.WebGLRenderer. */
+      this.renderer.render(this.scene, this.camera)
+    }
   }
 
   /**
@@ -161,14 +161,14 @@ class App {
       context: this.gl
     });
     this.renderer.autoClear = false;
-    // this.renderer.shadowMap.enabled = true;
-    // this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     /** Initialize our demo scene. */
-    this.scene = DemoUtils.createCubeScene();
-    // this.scene = DemoUtils.createLitScene();
-    // this.reticle = new Reticle();
-    // this.scene.add(this.reticle);
+    // this.scene = DemoUtils.createCubeScene();
+    this.scene = DemoUtils.createLitScene();
+    this.reticle = new Reticle();
+    this.scene.add(this.reticle);
 
     /** We'll update the camera matrices directly from API, so
      * disable matrix auto updates so three.js doesn't attempt
@@ -178,16 +178,16 @@ class App {
   }
 
   /** Place a sunflower when the screen is tapped. */
-  // onSelect = () => {
-  //   if (window.sunflower) {
-  //     const clone = window.sunflower.clone();
-  //     clone.position.copy(this.reticle.position);
-  //     this.scene.add(clone)
-  //
-  //     const shadowMesh = this.scene.children.find(c => c.name === 'shadowMesh');
-  //     shadowMesh.position.y = clone.position.y;
-  //   }
-  // }
+  onSelect = () => {
+    if (window.sunflower) {
+      const clone = window.sunflower.clone();
+      clone.position.copy(this.reticle.position);
+      this.scene.add(clone)
+  
+      const shadowMesh = this.scene.children.find(c => c.name === 'shadowMesh');
+      shadowMesh.position.y = clone.position.y;
+    }
+  }
 }
 
 window.app = new App();
